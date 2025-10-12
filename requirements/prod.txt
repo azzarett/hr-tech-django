@@ -1,0 +1,4 @@
+python-dotenv
+django
+django-unfold
+python-decouple

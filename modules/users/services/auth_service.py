@@ -1,6 +1,6 @@
 import uuid
 from typing import Optional
-from modules.users.repository.users_repository import UserRepository
+from modules.users.repository.users_repository import UsersRepository
 from modules.users.repository.user_auth_token_repository import UserAuthTokenRepository
 from modules.users.domain.models import UserAuthToken
 from modules.users.domain.exceptions import UserNotFoundError, InvalidCredentialsError, UserInactiveError
@@ -10,7 +10,7 @@ class AuthService:
 
     @staticmethod
     def sign_in(email: str, password: str) -> dict:
-        user = UserRepository.get_by_email(email)
+        user = UsersRepository.get_by_email(email)
         if not user:
             raise UserNotFoundError("User does not exist")
         if not user.is_active:

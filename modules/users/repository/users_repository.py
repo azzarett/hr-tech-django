@@ -2,7 +2,7 @@ from typing import Optional
 from modules.users.domain.models import User
 
 
-class UserRepository:
+class UsersRepository:
 
     @staticmethod
     def get_by_id(user_id) -> Optional[User]:

@@ -1,17 +1,9 @@
-from modules.users.repository.users_repository import UserRepository
+from rest_framework import serializers
 from modules.users.domain.models import User
-from modules.users.domain.exceptions import UserNotFoundError
 
 
-class UserService:
-
-    @staticmethod
-    def get_me(user: User) -> User:
-        return user
-
-    @staticmethod
-    def get_one_user(user_id) -> User:
-        user = UserRepository.get_by_id(user_id)
-        if not user:
-            raise UserNotFoundError(f"User with id={user_id} not found")
-        return user
+class UsersSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = ["password", "is_superuser", "is_active", "is_staff", "deleted_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]

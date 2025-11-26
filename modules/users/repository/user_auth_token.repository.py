@@ -16,5 +16,4 @@ class UserAuthTokenRepository:
 
     @staticmethod
     def revoke_tokens(user_id):
-        UserAuthToken.objects.filter(user_id=user_id, deleted_at__isnull=True).update(
-            deleted_at=timezone.now())
+        UserAuthToken.objects.filter(user_id=user_id, deleted_at__isnull=True).update(deleted_at=timezone.now())

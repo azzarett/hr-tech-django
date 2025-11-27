@@ -26,15 +26,13 @@ SECRET_KEY = SECRET_KEY
 # Application definition
 
 INSTALLED_APPS = [
-    'unfold',
+    'modules.users', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'users',
-    'projects',
 ]
 
 MIDDLEWARE = [

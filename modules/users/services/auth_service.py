@@ -18,10 +18,8 @@ class AuthService:
         if not user.check_password(password):
             raise InvalidCredentialsError("Wrong password")
 
-        # удаляем старые токены
         UserAuthTokenRepository.revoke_tokens(user.id)
 
-        # создаём новый токен
         token_str = str(uuid.uuid4())
         token = UserAuthToken(user=user, token=token_str)
         UserAuthTokenRepository.create(token)
@@ -36,4 +34,7 @@ class AuthService:
         token = UserAuthTokenRepository.get_by_token(token_str)
         if not token:
             return None
-        return {"token": token.token, "created_at": token.created_at, "user": token.user}
+        user = UsersRepository.get_by_id(token.user_id)
+        if not user:
+            return None
+        return {"token": token.token, "created_at": token.created_at, "user": user}

@@ -2,6 +2,7 @@ import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
+
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -20,6 +21,7 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
         return self.create_user(email, password, **extra_fields)
+
 
 class User(AbstractBaseUser, PermissionsMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -55,6 +57,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         help_text="Specific permissions for this user.",
         verbose_name="user permissions",
     )
+    teams = models.ManyToManyField(
+        "teams.Team",
+        through="teams.UserTeam",
+        related_name="users",
+        blank=True,
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -67,6 +75,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def __str__(self):
         return self.email
+
 
 class UserAuthToken(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

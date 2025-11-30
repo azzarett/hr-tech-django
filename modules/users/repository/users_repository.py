@@ -1,16 +1,36 @@
 from typing import Optional
+from django.db.models import Prefetch
+from modules.teams.domain.models import Role, Team, UserTeam
 from modules.users.domain.models import User
 
 
 class UsersRepository:
 
     @staticmethod
+    def _base_queryset():
+        roles_qs = Role.objects.filter(deleted_at__isnull=True).select_related("team")
+        user_teams_qs = (
+            UserTeam.objects.filter(deleted_at__isnull=True)
+            .select_related("team")
+        )
+        teams_qs = Team.objects.filter(deleted_at__isnull=True)
+
+        return (
+            User.objects.filter(deleted_at__isnull=True)
+            .prefetch_related(
+                Prefetch("roles", queryset=roles_qs),
+                Prefetch("user_teams", queryset=user_teams_qs),
+                Prefetch("teams", queryset=teams_qs),
+            )
+        )
+
+    @staticmethod
     def get_by_id(user_id) -> Optional[User]:
-        return User.objects.filter(id=user_id, deleted_at__isnull=True).first()
+        return UsersRepository._base_queryset().filter(id=user_id).first()
 
     @staticmethod
     def get_by_email(email) -> Optional[User]:
-        return User.objects.filter(email=email, deleted_at__isnull=True).first()
+        return UsersRepository._base_queryset().filter(email=email).first()
 
     @staticmethod
     def save(user: User) -> User:

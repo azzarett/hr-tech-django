@@ -26,7 +26,8 @@ SECRET_KEY = SECRET_KEY
 # Application definition
 
 INSTALLED_APPS = [
-    'modules.users', 
+    'modules.users',
+    'modules.teams',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',

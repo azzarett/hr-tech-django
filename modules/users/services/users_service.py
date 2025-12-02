@@ -27,8 +27,9 @@ class UsersService:
         return UsersRepository.get_by_email(email)
 
     @staticmethod
-    def create_user(email: str, password: str, first_name: str, last_name: str):
-        return User.objects.create_user(
+    def create_user(email: str, password: str, first_name: str, last_name: str) -> User:
+        # type: ignore - UserManager has create_user method
+        return User.objects.create_user(  # type: ignore
             email=email,
             password=password,
             first_name=first_name,
@@ -61,7 +62,7 @@ class UsersService:
         if 'phone' in data:
             user.phone = data['phone']
         if 'faculty_id' in data:
-            user.faculty_id = data['faculty_id']
+            user.faculty = data['faculty_id']
         if 'clothes_size' in data:
             user.clothes_size = data['clothes_size']
         if 'city' in data:

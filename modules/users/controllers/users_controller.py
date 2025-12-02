@@ -146,8 +146,11 @@ class UsersController(ViewSet):
         if not team_id:
             return Response({"detail": "team_id is required"}, status=400)
 
+        if not pk:
+            return Response({"detail": "user_id is required"}, status=400)
+
         try:
-            UsersService.delete_user(pk, team_id, token_data["user"])
+            UsersService.delete_user(str(pk), team_id, token_data["user"])
             return Response({"message": "User removed from team"}, status=200)
         except UserNotFoundError as e:
             return Response({"detail": str(e)}, status=404)

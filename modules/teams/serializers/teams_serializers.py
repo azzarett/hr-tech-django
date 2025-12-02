@@ -40,6 +40,8 @@ class UserTeamSerializer(serializers.ModelSerializer):
         model = UserTeam
         fields = (
             "id",
+            "user_id",
+            "team_id",
             "has_permission_manage_users",
             "has_permission_manage_projects",
             "team",

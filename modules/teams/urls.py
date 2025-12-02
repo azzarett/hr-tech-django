@@ -5,5 +5,5 @@ teams = TeamsController.as_view
 
 urlpatterns = [
     path("", teams({"get": "list", "post": "create"})),
-    path("<uuid:pk>", teams({"get": "retrieve"})),
+    path("/<uuid:pk>", teams({"get": "retrieve"})),
 ]

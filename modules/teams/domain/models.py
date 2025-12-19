@@ -1,4 +1,8 @@
+from __future__ import annotations
+
 import uuid
+from typing import Any
+
 from django.db import models
 
 
@@ -31,7 +35,7 @@ class Team(models.Model):
         app_label = "teams"
         db_table = "teams"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.name
 
 
@@ -58,7 +62,7 @@ class Role(models.Model):
         app_label = "teams"
         db_table = "roles"
 
-    def __str__(self):
+    def __str__(self) -> str:
         user_value = getattr(self, "user_id", None) or getattr(self.user, "id", None)
         return f"{user_value} - {self.role}"
 
@@ -90,7 +94,7 @@ class UserTeam(models.Model):
             )
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         user_value = getattr(self, "user_id", None) or getattr(self.user, "id", None)
         team_value = getattr(self, "team_id", None) or getattr(self.team, "id", None)
         return f"{user_value} - {team_value}"

@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import UUID
 from django.utils import timezone
 from modules.users.domain.models import UserAuthToken
 
@@ -15,5 +16,8 @@ class UserAuthTokenRepository:
         return UserAuthToken.objects.filter(token=token_str, deleted_at__isnull=True).first()
 
     @staticmethod
-    def revoke_tokens(user_id):
-        UserAuthToken.objects.filter(user_id=user_id, deleted_at__isnull=True).update(deleted_at=timezone.now())
+    def revoke_tokens(user_id: UUID) -> int:
+        return UserAuthToken.objects.filter(
+            user_id=user_id,
+            deleted_at__isnull=True,
+        ).update(deleted_at=timezone.now())

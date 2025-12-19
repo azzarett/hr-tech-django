@@ -1,5 +1,7 @@
 from typing import Optional
-from django.db.models import Prefetch
+
+from django.db.models import Prefetch, QuerySet
+
 from modules.teams.domain.models import Role, Team, UserTeam
 from modules.users.domain.models import User
 
@@ -7,7 +9,7 @@ from modules.users.domain.models import User
 class UsersRepository:
 
     @staticmethod
-    def _base_queryset():
+    def _base_queryset() -> QuerySet[User]:
         roles_qs = Role.objects.filter(deleted_at__isnull=True).select_related("team")
         user_teams_qs = (
             UserTeam.objects.filter(deleted_at__isnull=True)
@@ -25,11 +27,11 @@ class UsersRepository:
         )
 
     @staticmethod
-    def get_by_id(user_id) -> Optional[User]:
+    def get_by_id(user_id: str | None) -> Optional[User]:
         return UsersRepository._base_queryset().filter(id=user_id).first()
 
     @staticmethod
-    def get_by_email(email) -> Optional[User]:
+    def get_by_email(email: str) -> Optional[User]:
         return UsersRepository._base_queryset().filter(email=email).first()
 
     @staticmethod

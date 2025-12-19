@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import uuid
+
 from django.db import models
 from django.utils import timezone
+
 from modules.teams.domain.models import Team
 from modules.users.domain.models import User
 
@@ -38,6 +42,6 @@ class Invitation(models.Model):
         db_table = "invitations"
         app_label = "invitations"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.email} -> {self.team.name} ({self.status})"
 

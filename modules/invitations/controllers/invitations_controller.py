@@ -1,10 +1,11 @@
-from rest_framework.views import APIView
+from rest_framework import status
+from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework import status, permissions
+from rest_framework.views import APIView
 
-from modules.users.services.auth_service import AuthService
-
+from modules.users.authentication import BearerTokenAuthentication
+from modules.users.permissions import IsBearerAuthenticated
 from modules.invitations.services.invitations_service import InvitationsService
 from modules.invitations.serializers.invitations_serializers import (
     InvitationSerializer,
@@ -42,21 +43,11 @@ class TeamInvitationsView(APIView):
     POST /v1/teams/<team_id>/invitations
     GET  /v1/teams/<team_id>/invitations
     """
-    permission_classes = [AllowAny]
+    authentication_classes = (BearerTokenAuthentication,)
+    permission_classes = [IsBearerAuthenticated]
 
-    def post(self, request, team_id):
-        # 1. Validate Bearer token
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            return Response({"detail": "Authentication credentials were not provided."}, status=401)
-
-        token_str = auth_header.split(" ")[1]
-        token_data = AuthService.validate_token(token_str)
-        if not token_data:
-            return Response({"detail": "Invalid token"}, status=401)
-
-        user = token_data["user"]
-
+    def post(self, request: Request, team_id: str):
+        user = request.user
         # 2. Validate body
         serializer = CreateInvitationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -80,16 +71,7 @@ class TeamInvitationsView(APIView):
             status=201,
         )
 
-    def get(self, request, team_id):
-        # Auth via Bearer
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            return Response({"detail": "Authentication credentials were not provided."}, status=401)
-
-        token_str = auth_header.split(" ")[1]
-        if not AuthService.validate_token(token_str):
-            return Response({"detail": "Invalid token"}, status=401)
-
+    def get(self, request: Request, team_id: str):
         invitations = InvitationsService.get_team_invitations(team_id)
         return Response({"invitations": InvitationSerializer(invitations, many=True).data}, status=200)
 
@@ -100,7 +82,7 @@ class TeamInvitationsView(APIView):
 class InvitationByTokenView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, token):
+    def get(self, request: Request, token: str) -> Response:
         try:
             invitation = InvitationsService.get_invitation_by_token_without_status_check(
                 token)
@@ -115,7 +97,7 @@ class InvitationByTokenView(APIView):
 class InvitationCheckUserView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, token):
+    def get(self, request: Request, token: str) -> Response:
         try:
             invitation = InvitationsService.get_invitation_by_token_without_status_check(
                 token)
@@ -141,7 +123,7 @@ class InvitationCheckUserView(APIView):
 class AcceptInvitationView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request):
+    def post(self, request: Request) -> Response:
         serializer = AcceptInvitationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         token = serializer.validated_data["token"]
@@ -162,7 +144,7 @@ class AcceptInvitationView(APIView):
 class RegisterUserByInvitationView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request, token):
+    def post(self, request: Request, token: str) -> Response:
         serializer = RegisterUserByInvitationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -184,18 +166,10 @@ class RegisterUserByInvitationView(APIView):
 #   CANCEL INVITATION
 # ============================
 class CancelInvitationView(APIView):
-    permission_classes = [AllowAny]
+    authentication_classes = (BearerTokenAuthentication,)
+    permission_classes = [IsBearerAuthenticated]
 
-    def patch(self, request, id):
-        # Auth via Bearer
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            return Response({"detail": "Authentication credentials were not provided."}, status=401)
-
-        token_str = auth_header.split(" ")[1]
-        if not AuthService.validate_token(token_str):
-            return Response({"detail": "Invalid token"}, status=401)
-
+    def patch(self, request: Request, id: str):
         try:
             InvitationsService.cancel_invitation(id)
         except Exception as exc:
@@ -213,18 +187,10 @@ class AllInvitationsView(APIView):
     """
     GET /v1/invitations - get all invitations (optionally filtered by team_id)
     """
-    permission_classes = [AllowAny]
+    authentication_classes = (BearerTokenAuthentication,)
+    permission_classes = [IsBearerAuthenticated]
 
-    def get(self, request):
-        # Auth via Bearer
-        auth_header = request.headers.get("Authorization", "")
-        if not auth_header.startswith("Bearer "):
-            return Response({"detail": "Authentication credentials were not provided."}, status=401)
-
-        token_str = auth_header.split(" ")[1]
-        if not AuthService.validate_token(token_str):
-            return Response({"detail": "Invalid token"}, status=401)
-
+    def get(self, request: Request):
         team_id = request.query_params.get("team_id")
         
         if team_id:

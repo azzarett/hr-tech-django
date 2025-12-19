@@ -1,10 +1,14 @@
+from __future__ import annotations
+
 import uuid
+from typing import Any
+
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
+    def create_user(self, email: str, password: str | None = None, **extra_fields: Any) -> "User":
         if not email:
             raise ValueError("Email is required")
         email = self.normalize_email(email)
@@ -16,7 +20,7 @@ class UserManager(BaseUserManager):
         user.save(using=self._db)
         return user
 
-    def create_superuser(self, email, password=None, **extra_fields):
+    def create_superuser(self, email: str, password: str | None = None, **extra_fields: Any) -> "User":
         extra_fields.setdefault("is_staff", True)
         extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_active", True)
@@ -73,7 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         app_label = "users"
         db_table = "users_user"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.email
 
 
@@ -90,5 +94,5 @@ class UserAuthToken(models.Model):
         db_table = "user_auth_tokens"
         app_label = "users"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.user.email} - {self.id}"

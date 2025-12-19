@@ -1,15 +1,39 @@
 import uuid
-from typing import Optional
+from datetime import datetime
+from typing import Optional, TypedDict
+
+from modules.users.domain.exceptions import (
+    InvalidCredentialsError,
+    UserInactiveError,
+    UserNotFoundError,
+)
+from modules.users.domain.models import User, UserAuthToken
+from modules.users.repository.user_auth_token_repository import (
+    UserAuthTokenRepository,
+)
 from modules.users.repository.users_repository import UsersRepository
-from modules.users.repository.user_auth_token_repository import UserAuthTokenRepository
-from modules.users.domain.models import UserAuthToken
-from modules.users.domain.exceptions import UserNotFoundError, InvalidCredentialsError, UserInactiveError
+
+
+class AuthPayload(TypedDict):
+    token: str
+    created_at: datetime
+
+
+class AuthResult(TypedDict):
+    auth: AuthPayload
+    user: User
+
+
+class TokenData(TypedDict):
+    token: str
+    created_at: datetime
+    user: User
 
 
 class AuthService:
 
     @staticmethod
-    def sign_in(email: str, password: str) -> dict:
+    def sign_in(email: str, password: str) -> AuthResult:
         user = UsersRepository.get_by_email(email)
         if not user:
             raise UserNotFoundError("User does not exist")
@@ -30,11 +54,15 @@ class AuthService:
         }
 
     @staticmethod
-    def validate_token(token_str: str) -> Optional[dict]:
+    def validate_token(token_str: str) -> Optional[TokenData]:
         token = UserAuthTokenRepository.get_by_token(token_str)
         if not token:
             return None
         user = UsersRepository.get_by_id(token.user_id)
         if not user:
             return None
-        return {"token": token.token, "created_at": token.created_at, "user": user}
+        return {
+            "token": token.token,
+            "created_at": token.created_at,
+            "user": user,
+        }

@@ -1,8 +1,13 @@
-from modules.users.repository.users_repository import UsersRepository
-from modules.users.domain.models import User
-from modules.users.domain.exceptions import UserNotFoundError
-from modules.teams.domain.models import UserTeam
+from __future__ import annotations
+
+from typing import List, Optional
+
 from django.utils import timezone
+
+from modules.teams.domain.models import UserTeam
+from modules.users.domain.exceptions import UserNotFoundError
+from modules.users.domain.models import User
+from modules.users.repository.users_repository import UsersRepository
 
 
 class UsersService:
@@ -12,7 +17,7 @@ class UsersService:
         return user
 
     @staticmethod
-    def get_one_user(user_id) -> User:
+    def get_one_user(user_id: str | None) -> User:
         user = UsersRepository.get_by_id(user_id)
         if not user:
             raise UserNotFoundError(f"User with id={user_id} not found")
@@ -23,7 +28,7 @@ class UsersService:
         return UsersRepository.get_by_email(email) is not None
 
     @staticmethod
-    def get_by_email(email: str):
+    def get_by_email(email: str) -> Optional[User]:
         return UsersRepository.get_by_email(email)
 
     @staticmethod
@@ -37,7 +42,7 @@ class UsersService:
         )
 
     @staticmethod
-    def get_team_users(team_id: str):
+    def get_team_users(team_id: str) -> List[User]:
         """Get all users in a team"""
         user_teams = UserTeam.objects.filter(
             team_id=team_id,
@@ -47,7 +52,7 @@ class UsersService:
         return [ut.user for ut in user_teams]
 
     @staticmethod
-    def update_me(user: User, data: dict, team_id: str):
+    def update_me(user: User, data: dict, team_id: str) -> Optional[User]:
         """Update current user profile"""
         from modules.teams.domain.models import Role
         
@@ -95,7 +100,7 @@ class UsersService:
         return UsersRepository.get_by_id(user.id)
 
     @staticmethod
-    def delete_user(user_id: str, team_id: str, current_user: User):
+    def delete_user(user_id: str, team_id: str, current_user: User) -> UserTeam:
         """Remove user from team (soft delete)"""
         from modules.teams.domain.models import Role
         

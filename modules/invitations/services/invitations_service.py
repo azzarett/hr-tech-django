@@ -1,21 +1,28 @@
+from __future__ import annotations
+
+from typing import List, Tuple
+from uuid import UUID
+
 from django.conf import settings
 from django.contrib.auth.hashers import make_password
 
-from modules.invitations.repository.invitations_repository import InvitationsRepository
 from modules.invitations.domain.exceptions import (
-    InvitationNotFoundError,
-    InvitationInvalidError,
-    InvitationEmailMismatchError,
     EmailAlreadyExistsError,
+    InvitationEmailMismatchError,
+    InvitationInvalidError,
+    InvitationNotFoundError,
 )
+from modules.invitations.domain.models import Invitation
+from modules.invitations.repository.invitations_repository import InvitationsRepository
+from modules.teams.domain.models import Role, UserTeam
+from modules.users.domain.models import User
 from modules.users.services.users_service import UsersService
-from modules.teams.domain.models import UserTeam, Role
 
 
 class InvitationsService:
 
     @staticmethod
-    def create_invitation(team_id, created_by, dto):
+    def create_invitation(team_id: str, created_by: User, dto: dict) -> Tuple[Invitation, str]:
         invitation = InvitationsRepository.create(
             team_id=team_id,
             created_by=created_by,
@@ -26,13 +33,13 @@ class InvitationsService:
             has_permission_manage_projects=dto.get("has_permission_manage_projects", False),
         )
 
-        frontend = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
+        frontend: str = getattr(settings, "FRONTEND_URL", "http://localhost:5173")
         invite_url = f"{frontend}/invite/{invitation.token}"
 
         return invitation, invite_url
 
     @staticmethod
-    def get_invitation_by_token_without_status_check(token):
+    def get_invitation_by_token_without_status_check(token: str | UUID) -> Invitation:
         invitation = InvitationsRepository.find_by_token(token)
         if not invitation:
             raise InvitationNotFoundError("Invitation not found")
@@ -40,7 +47,7 @@ class InvitationsService:
         return invitation
 
     @staticmethod
-    def get_invitation_by_token(token):
+    def get_invitation_by_token(token: str | UUID) -> Invitation:
         invitation = InvitationsRepository.find_by_token(token)
         if not invitation:
             raise InvitationNotFoundError("Invitation not found")
@@ -51,11 +58,11 @@ class InvitationsService:
         return invitation
 
     @staticmethod
-    def check_user_exists(email):
+    def check_user_exists(email: str) -> bool:
         return UsersService.exists_by_email(email)
 
     @staticmethod
-    def accept_invitation(token):
+    def accept_invitation(token: str | UUID) -> None:
         invitation = InvitationsService.get_invitation_by_token(token)
 
         user = UsersService.get_by_email(invitation.email)
@@ -67,7 +74,7 @@ class InvitationsService:
         InvitationsRepository.update_status(invitation, invitation.STATUS_ACCEPTED)
 
     @staticmethod
-    def register_user_by_invitation(token, data):
+    def register_user_by_invitation(token: str | UUID, data: dict) -> User:
         invitation = InvitationsService.get_invitation_by_token(token)
 
         if data["email"] != invitation.email:
@@ -90,7 +97,7 @@ class InvitationsService:
         return user
 
     @staticmethod
-    def cancel_invitation(invitation_id):
+    def cancel_invitation(invitation_id: str | UUID) -> None:
         invitation = InvitationsRepository.find_by_id(invitation_id)
         if not invitation:
             raise InvitationNotFoundError("Invitation not found")
@@ -98,11 +105,11 @@ class InvitationsService:
         InvitationsRepository.update_status(invitation, invitation.STATUS_CANCELLED)
 
     @staticmethod
-    def get_team_invitations(team_id):
+    def get_team_invitations(team_id: str) -> List[Invitation]:
         return InvitationsRepository.find_by_team_id(team_id)
 
     @staticmethod
-    def _attach_user_to_team(user, invitation):
+    def _attach_user_to_team(user: User, invitation: Invitation) -> None:
         """
         Creates Role/UserTeam with correct flags.
         """

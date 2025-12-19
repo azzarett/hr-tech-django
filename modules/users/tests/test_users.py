@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import uuid
 from typing import Dict
 
 from rest_framework import status
@@ -229,7 +230,8 @@ class InvitationsApiTests(APITestCase):
 
     def test_accept_invitation_not_found(self) -> None:
         res = self.client.post(
-            "/v1/accept", {"token": "unknown"}, format="json")
+            "/v1/accept", {"token": str(uuid.uuid4())}, format="json"
+        )
         self.assertEqual(res.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_register_user_by_invitation_success(self) -> None:
